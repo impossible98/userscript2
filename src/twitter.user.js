@@ -173,8 +173,8 @@ const TMD = (function() {
                     info['file-type'] = media.type.replace('animated_', '');
                     info.out = (out.replace(/\.?{file-ext}/, '') + (medias.length > 1 && !out.match('{file-name}')
                         ? '-' + i
-                        : '') + '.{file-ext}').replace(/{([^{}:]+)(:[^{}]+)?}/g, (match, name) =>
-                            info[name]);
+                        : '')
+                        + '.{file-ext}').replace(/{([^{}:]+)(:[^{}]+)?}/g, (match, name) => info[name]);
                     this.downloader.add({
                         url: info.url,
                         name: info.out,
