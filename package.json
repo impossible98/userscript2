@@ -3,9 +3,12 @@
     "version": "0.0.0",
     "private": true,
     "scripts": {
+        "dev": "tsc",
         "fmt": "dprint fmt"
     },
     "devDependencies": {
-        "dprint": "^0.20.0"
+        "@types/node": "^16.0.0",
+        "dprint": "^0.20.0",
+        "typescript": "^4.0.0"
     }
 }

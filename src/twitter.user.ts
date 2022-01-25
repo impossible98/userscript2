@@ -1,14 +1,10 @@
 // ==UserScript==
 // @name        Twitter Media Downloader
-// @name:ja     Twitter Media Downloader
 // @name:zh-cn  Twitter 媒体下载
-// @name:zh-tw  Twitter 媒體下載
 // @description    Save Video/Photo by One-Click.
-// @description:ja ワンクリックで動画・画像を保存する。
 // @description:zh-cn 一键保存视频/图片
-// @description:zh-tw 一鍵保存視頻/圖片
-// @version     0.85
-// @author      AMANE
+// @version     0.0.2
+// @author      impossible98
 // @namespace   none
 // @match       https://twitter.com/*
 // @grant       GM_registerMenuCommand
@@ -17,10 +13,11 @@
 // @grant       GM_download
 // @compatible  Chrome
 // @compatible  Firefox
+// @downloadURL  https://raw.githubusercontent.com/impossible98/userscript/master/dist/twitter.user.js
 // ==/UserScript==
 // https://greasyfork.org/zh-CN/scripts/423001-twitter-media-downloader
 
-const filename = 'twitter_{user-name}(@{user-id})_{date-time}_{status-id}_{file-type}';
+const filename = '{date-time}_{file-type}';
 
 const language = {
     en: {
@@ -36,30 +33,11 @@ const language = {
             pattern: 'File Name Pattern',
         },
     },
-    ja: {
-        download: 'ダウンロード',
-        completed: 'ダウンロード完了',
-        settings: '設定',
-        dialog: {
-            title: 'ダウンロード設定',
-            save: '保存',
-            record: 'ダウンロード履歴を保存する',
-            clear: '(クリア)',
-            confirm: 'ダウンロード履歴を削除する？',
-            pattern: 'ファイル名パターン',
-        },
-    },
     zh: {
         download: '下载',
         completed: '下载完成',
         settings: '设置',
         dialog: { title: '下载设置', save: '保存', record: '保存下载记录', clear: '(清除)', confirm: '确认要清除下载记录？', pattern: '文件名格式' },
-    },
-    'zh-Hant': {
-        download: '下載',
-        completed: '下載完成',
-        settings: '設置',
-        dialog: { title: '下載設置', save: '保存', record: '保存下載記錄', clear: '(清除)', confirm: '確認要清除下載記錄？', pattern: '文件名規則' },
     },
 };
 
@@ -94,10 +72,12 @@ const css = `
 
 const TMD = (function() {
     let lang, history;
+
     return {
         init: function() {
             GM_registerMenuCommand((language[navigator.language] || language.en).settings, this.settings);
             document.head.insertAdjacentHTML('beforeend', '<style>' + css + '</style>');
+
             lang = language[document.querySelector('html').lang] || language.en;
             history = this.storage('history');
         },
@@ -146,7 +126,7 @@ const TMD = (function() {
             };
             let datetime = out.match(/{date-time(-local)?:[^{}]+}/)
                 ? out.match(/{date-time(?:-local)?:([^{}]+)}/)[1].replace(/[\\\/\|<>\*\?:"]/g, v => invalid_chars[v])
-                : 'YYYYMMDD-hhmmss';
+                : 'YYYY-MM-DD-hh-mm-ss';
             let info = {};
             info['status-id'] = status_id;
             info['user-name'] = user.name.replace(/([\\\/\|\*\?:"]|🔞)/g, v => invalid_chars[v]);
@@ -214,31 +194,44 @@ const TMD = (function() {
             if (style) btn.style.cssText = style;
         },
         settings: async function() {
-            const $element = (parent, tag, style, content, css) => {
+            const $element = function(parent, tag, style, content, css) {
                 let el = document.createElement(tag);
-                if (style) el.style.cssText = style;
+
+                if (style) {
+                    el.style.cssText = style;
+                }
+
                 if (typeof content !== 'undefined') {
                     if (tag == 'input') {
                         if (content == 'checkbox') el.type = content;
                         else el.value = content;
                     } else el.innerHTML = content;
                 }
-                if (css) css.split(' ').forEach(c => el.classList.add(c));
+
+                if (css) {
+                    css.split(' ').forEach(c => el.classList.add(c));
+                }
+
                 parent.appendChild(el);
+
                 return el;
             };
+
             let wapper = $element(
                 document.body,
                 'div',
                 'position: fixed; left: 0px; top: 0px; width: 100%; height: 100%; background-color: #0009; z-index: 10;',
             );
+
             let wapper_close;
+
             wapper.onmousedown = e => {
                 wapper_close = e.target == wapper;
             };
             wapper.onmouseup = e => {
                 if (wapper_close && e.target == wapper) wapper.remove();
             };
+
             let dialog = $element(
                 wapper,
                 'div',
